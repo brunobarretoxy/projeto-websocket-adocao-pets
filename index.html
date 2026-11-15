@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🐾 Mural em Tempo Real - Adoção de Pets</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Cabeçalho -->
+        <header>
+            <h1>🐾 Mural em Tempo Real</h1>
+            <p>Avisos de adoção instantâneos com WebSocket</p>
+            <div class="status">
+                <span id="connection-status" class="status-badge disconnected">
+                    ⚫ Desconectado
+                </span>
+                <span id="client-id" class="client-info">ID: Aguardando...</span>
+            </div>
+        </header>
+
+        <!-- Seção Principal -->
+        <main>
+            <!-- Input de Mensagem -->
+            <section class="input-section">
+                <div class="input-group">
+                    <input 
+                        type="text" 
+                        id="messageInput" 
+                        placeholder="Ex: Luna foi adotada! 🎉"
+                        disabled
+                    >
+                    <button id="sendButton" disabled>
+                        📤 Enviar
+                    </button>
+                </div>
+                <div class="tips">
+                    💡 <strong>Dica:</strong> Abra esta página em 2 abas para ver o broadcast em tempo real!
+                </div>
+            </section>
+
+            <!-- Lista de Mensagens -->
+            <section class="messages-section">
+                <h2>💬 Mensagens em Tempo Real</h2>
+                <div id="messagesList" class="messages-list">
+                    <div class="empty-state">
+                        Nenhuma mensagem ainda. Envie a primeira!
+                    </div>
+                </div>
+            </section>
+
+            <!-- Informações Técnicas -->
+            <section class="info-section">
+                <h3>🔌 Informações Técnicas</h3>
+                <div class="tech-info">
+                    <p><strong>Protocolo:</strong> <code>ws://localhost:8000</code></p>
+                    <p><strong>Tipo de Conexão:</strong> WebSocket (bidirecional, tempo real)</p>
+                    <p><strong>Formato de Mensagem:</strong> JSON</p>
+                </div>
+                <div class="server-commands">
+                    <p><strong>Para iniciar o servidor, execute:</strong></p>
+                    <pre><code>python server.py</code></pre>
+                </div>
+            </section>
+        </main>
+
+        <!-- Rodapé -->
+        <footer>
+            <p>Projeto WebSocket - Tema: Adoção de Pets 🐾</p>
+            <p>Desenvolvido para demonstrar comunicação em tempo real</p>
+        </footer>
+    </div>
+
+    <!-- Scripts -->
+    <script src="client.js"></script>
+</body>
+</html>

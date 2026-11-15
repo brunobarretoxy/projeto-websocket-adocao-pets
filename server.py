@@ -43,15 +43,15 @@ async def handle_client(websocket, path):
     }
     
     # ========== OBRIGATÓRIO: LOG DE CONEXÃO ==========
-    print(f"\n✅ [CONEXÃO] Cliente {client_id} conectado")
+    print(f"\n[CONEXAO] Cliente {client_id} conectado")
     print(f"   Total de clientes: {len(clients)}")
     
     try:
         # Fica escutando mensagens do cliente
         async for message in websocket:
             # ========== OBRIGATÓRIO: LOG DE RECEBIMENTO ==========
-            print(f"\n📨 [MENSAGEM] Do cliente {client_id}:")
-            print(f"   Conteúdo: {message}")
+            print(f"\n[MENSAGEM] Do cliente {client_id}:")
+            print(f"   Conteudo: {message}")
             
             # Fazer broadcast: enviar para TODOS os clientes
             print(f"   Retransmitindo para {len(clients)} cliente(s)...")
@@ -61,9 +61,9 @@ async def handle_client(websocket, path):
                 try:
                     await client_ws.send(message)
                 except Exception as e:
-                    print(f"   ⚠️  Erro ao enviar para cliente: {e}")
+                    print(f"   [ERRO] Falha ao enviar para cliente: {e}")
             
-            print(f"   ✓ Broadcast concluído")
+            print(f"   [OK] Broadcast concluido")
     
     except websockets.exceptions.ConnectionClosed:
         pass
@@ -73,7 +73,7 @@ async def handle_client(websocket, path):
         if websocket in clients:
             del clients[websocket]
         
-        print(f"\n❌ [DESCONEXÃO] Cliente {client_id} desconectado")
+        print(f"\n[DESCONEXAO] Cliente {client_id} desconectado")
         print(f"   Total de clientes: {len(clients)}")
 
 
@@ -81,15 +81,15 @@ async def main():
     """Inicia o servidor WebSocket."""
     
     print("\n" + "="*60)
-    print("🚀 SERVIDOR WEBSOCKET - MURAL EM TEMPO REAL")
+    print("[*] SERVIDOR WEBSOCKET - MURAL EM TEMPO REAL")
     print("="*60)
-    print(f"\n⏳ Iniciando servidor...")
+    print(f"\n[*] Iniciando servidor...")
     
     # Criar servidor WebSocket
     # IMPORTANTE: ws://localhost:8000 é EXPLÍCITO no código
     async with websockets.serve(handle_client, "localhost", 8000):
-        print(f"✅ Servidor iniciado em: ws://localhost:8000")
-        print(f"\n📝 Logs de Eventos:")
+        print(f"[OK] Servidor iniciado em: ws://localhost:8000")
+        print(f"\n[*] Logs de Eventos:")
         print("-"*60)
         
         # Manter o servidor rodando
@@ -101,4 +101,4 @@ if __name__ == "__main__":
     try:
         asyncio.run(main())
     except KeyboardInterrupt:
-        print("\n\n⛔ Servidor encerrado pelo usuário")
+        print("\n\n[!] Servidor encerrado pelo usuário")

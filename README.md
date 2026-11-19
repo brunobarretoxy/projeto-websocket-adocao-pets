@@ -1,361 +1,115 @@
-# 🐾 WebSocket - Mural em Tempo Real (Adoção de Pets)
+# 🐾 WebSocket — Mural de Adoções
 
-## 📋 Descrição do Projeto
+Uma aplicação simples para compartilhar avisos sobre adoção de pets em tempo real. Quando uma pessoa publica um aviso, o servidor o retransmite para todos os clientes conectados, sem recarregar a página.
 
-Uma aplicação de comunicação em tempo real usando **WebSocket** que demonstra avisos instantâneos de adoção de pets. Quando um cliente envia uma mensagem (ex: "Luna foi adotada!"), o servidor retransmite para **todos os clientes conectados simultaneamente**.
+O projeto demonstra comunicação bidirecional com WebSocket, usando Python no servidor e HTML, CSS e JavaScript no navegador.
 
-O projeto evidencia a **diferença entre HTTP tradicional (requisição-resposta) e WebSocket (comunicação bidirecional contínua)**.
+## Requisitos
 
----
+- Python e `pip` instalados. O projeto foi testado com Python 3.14.
+- Um navegador atualizado.
+- As portas locais 8000 e 8001 disponíveis.
 
-## 🎯 Objetivo Educacional
+## Como executar
 
-Ao final do projeto, demonstramos:
+Abra um terminal **na pasta do projeto** e instale as dependências:
 
-✅ **Conexão WebSocket:** `ws://localhost:8000` (explícito no código)  
-✅ **Envio/Recebimento:** Cliente envia mensagem → Servidor retransmite  
-✅ **Broadcast:** Todos os clientes recebem simultaneamente  
-✅ **Ciclo de vida:** Abertura → Envio → Recebimento → Encerramento  
-✅ **Múltiplos clientes:** Teste em 2+ abas do navegador  
-✅ **Registro em console:** Logs de conexão/desconexão/mensagens  
-
----
-
-## 🚀 Execução Rápida
-
-### 1️⃣ Pré-requisitos
-```bash
-# Python 3.8+
-python --version
-
-# Instalar dependências
-pip install websockets
+```powershell
+python -m pip install -r requirements.txt
 ```
 
-### 2️⃣ Iniciar o Servidor
-```bash
+### 1. Inicie o servidor WebSocket
+
+No primeiro terminal, execute:
+
+```powershell
 python server.py
 ```
 
-**Esperado:**
-```
-Server started on ws://localhost:8000
-Waiting for connections...
-```
+Mantenha esse terminal aberto. A saída deve incluir:
 
-### 3️⃣ Abrir a Interface
-```
-Abra 2 abas do navegador:
-http://localhost:8000
-http://localhost:8000
+```text
+[OK] Servidor iniciado em: ws://localhost:8000
 ```
 
-### 4️⃣ Testar
-- Na **aba 1**: Digite "Luna foi adotada!" no input
-- Clique "Enviar"
-- **Ambas as abas** mostram a mensagem em tempo real ✨
+### 2. Inicie o servidor HTTP
 
----
+Abra um **segundo terminal**, também na pasta do projeto, e execute:
 
-## 📂 Estrutura do Projeto
-
-```
-projeto-websocket-adocao-pets/
-├── README.md                    # Este arquivo
-├── server.py                    # Servidor WebSocket (Python)
-├── index.html                   # Interface web
-├── style.css                    # Estilos CSS
-├── client.js                    # Cliente JavaScript (nativo)
-└── docs/
-    ├── DECISOES_TECNICAS.md     # Respostas técnicas para o professor
-    └── ARQUITETURA.md           # Detalhes de implementação
+```powershell
+python -m http.server 8001
 ```
 
----
+Mantenha os dois terminais abertos. O servidor HTTP entrega a página e seus arquivos; o servidor WebSocket, na porta 8000, cuida das mensagens em tempo real.
 
-## 🔌 Arquitetura
+### 3. Teste com dois clientes
 
-### Fluxo de Comunicação
+1. Abra `http://localhost:8001` em duas abas ou janelas do navegador.
+2. Confira se ambas mostram **Conectado**.
+3. Na primeira aba, informe seu nome, escreva um aviso, como `Luna foi adotada!`, e clique em **Publicar aviso**.
+4. Observe o nome e o aviso aparecerem nas duas abas sem atualizar a página.
+5. Feche uma das abas e observe o registro de desconexão no terminal do servidor WebSocket.
 
-```
-┌─────────────────────────────────────────────────────────┐
-│ CLIENTE 1 (Aba 1)                                       │
-│ const ws = new WebSocket("ws://localhost:8000")        │
-└─────────────────────────────────────────────────────────┘
-                          │
-                          │ 1. Envia mensagem
-                          │    ws.send(JSON.stringify({...}))
-                          ▼
-┌─────────────────────────────────────────────────────────┐
-│ SERVIDOR (Python)                                       │
-│ async def handle_client(websocket, path):              │
-│   - Registra cliente                                   │
-│   - Recebe mensagem                                    │
-│   - Retransmite para TODOS                             │
-└─────────────────────────────────────────────────────────┘
-                          │
-          ┌───────────────┴────────────────┐
-          │                                │ 2. Broadcast
-          ▼                                ▼
-    ┌─────────────┐              ┌─────────────┐
-    │ CLIENTE 1   │              │ CLIENTE 2   │
-    │ (recebe)    │              │ (recebe)    │
-    └─────────────┘              └─────────────┘
+Para encerrar cada servidor, pressione `Ctrl+C` no terminal correspondente.
+
+## Como funciona
+
+O navegador cria uma conexão explícita com o protocolo WebSocket:
+
+```javascript
+ws = new WebSocket("ws://localhost:8000");
 ```
 
-### Identificação de Clientes
+O cliente envia o aviso em JSON. O servidor recebe a mensagem e a retransmite para todos os clientes conectados, incluindo quem enviou. A interface exibe o aviso e a hora. O servidor registra conexão, recebimento de mensagem e desconexão no console.
 
-Cada cliente recebe um **ID único** gerado pelo servidor:
-```python
-client_id = str(uuid.uuid4())  # Ex: "a1b2c3d4-e5f6-g7h8..."
-clients[websocket] = {
-    "id": client_id,
-    "connected_at": datetime.now()
-}
-```
-
-### Armazenamento de Conexões
-
-```python
-# Dicionário de clientes conectados
-clients = {
-    websocket_object: {
-        "id": "uuid-123",
-        "connected_at": "2026-11-15 17:40:00"
-    },
-    websocket_object_2: {
-        "id": "uuid-456",
-        "connected_at": "2026-11-15 17:41:00"
-    }
-}
-```
-
----
-
-## 📝 Formato de Mensagem (JSON)
+Exemplo de mensagem:
 
 ```json
 {
   "type": "message",
-  "client_id": "a1b2c3d4-e5f6-g7h8",
+  "author": "Bruno",
   "content": "Luna foi adotada!",
   "timestamp": "2026-11-15T17:40:30Z"
 }
 ```
 
----
+O servidor também envia mensagens JSON do tipo `connection_count` para atualizar o número de conexões na interface.
 
-## 🖥️ Tecnologias Utilizadas
+## Decisões técnicas
 
-| Camada | Tecnologia | Por quê |
-|--------|-----------|---------|
-| **Servidor** | Python + `websockets` | Simples, assíncrona, mostra `ws://` explícito |
-| **Cliente** | JavaScript nativo + WebSocket API | Sem dependências, protocolo `ws://` visível |
-| **Interface** | HTML5 + CSS3 | Minimalista, foco no WebSocket |
-| **Protocolo** | WebSocket (`ws://`) | Requisito obrigatório, bidirecional, em tempo real |
+- **Identificação:** o servidor gera um UUID para cada conexão e o utiliza nos registros do console. O nome exibido no aviso é informado pela própria pessoa; não há cadastro nem verificação de identidade.
+- **Armazenamento:** o dicionário `clients` mantém o objeto WebSocket como chave e os dados da conexão, incluindo UUID e horário, como valor.
+- **Desconexão:** ao encerrar uma conexão, o servidor a remove do dicionário no bloco `finally` e atualiza a contagem dos clientes restantes.
+- **Formato:** os avisos enviados pela interface são JSON, com tipo, nome, conteúdo e horário.
 
----
+Com **polling**, cada cliente precisaria consultar o servidor periodicamente, inclusive quando não houvesse novidades; a atualização poderia demorar até a próxima consulta. O WebSocket mantém a conexão aberta e permite ao servidor enviar atualizações assim que elas acontecem. É útil para avisos, chats e monitoramento em tempo real; uma API REST é adequada para operações de requisição e resposta, como consultas ou cadastros.
 
-## ⚙️ Como Funciona o Código
+## Arquivos principais
 
-### Servidor (Python)
-
-```python
-# 1. Define conexões ativas
-clients = {}
-
-# 2. Quando cliente conecta
-async def handle_client(websocket, path):
-    client_id = str(uuid.uuid4())
-    clients[websocket] = {"id": client_id}
-    print(f"Client {client_id} connected")  # Log obrigatório
-    
-    # 3. Fica escutando mensagens
-    try:
-        async for message in websocket:
-            print(f"Message from {client_id}: {message}")  # Log
-            
-            # 4. Retransmite para todos
-            for client_ws in clients:
-                await client_ws.send(message)
-    
-    # 5. Quando desconecta
-    finally:
-        del clients[websocket]
-        print(f"Client {client_id} disconnected")  # Log
-
-# 6. Inicia servidor em ws://localhost:8000
-start_server = websockets.serve(handle_client, "localhost", 8000)
+```text
+server.py                  Servidor WebSocket
+index.html                 Interface do mural
+client.js                  Cliente WebSocket e interação com a página
+style.css                  Estilos da interface
+requirements.txt           Dependência Python
+docs/DECISOES_TECNICAS.md  Explicações das decisões técnicas
+docs/ARQUITETURA.md        Detalhes da arquitetura
+docs/EXECUCAO_RAPIDA.md    Guia rápido de execução
+docs/GUIA_SCREENSHOTS.md   Orientações para capturar as evidências
+docs/CHECKLIST_APRESENTACAO.md  Checklist para apresentação
 ```
 
-### Cliente (JavaScript)
+O endereço `ws://localhost:8000` aponta para a própria máquina de quem abre a página; a demonstração com duas abas deve ser feita no mesmo computador que executa o servidor.
 
-```javascript
-// 1. Conecta ao servidor (ws:// EXPLÍCITO!)
-const ws = new WebSocket("ws://localhost:8000");
+## Solução de problemas
 
-// 2. Quando conecta
-ws.onopen = () => {
-    console.log("Connected to WebSocket server");
-};
+- **`No module named websockets`:** execute `python -m pip install -r requirements.txt` no mesmo ambiente Python usado para iniciar o servidor.
+- **Porta 8000 ou 8001 em uso:** verifique se já existe um servidor do projeto em outro terminal. Encerre apenas o processo que você identificou e que deseja parar, ou libere a porta antes de iniciar novamente.
+- **Interface desconectada:** confira se `server.py` está em execução e se a página foi aberta em `http://localhost:8001`.
+- **Já estou na pasta do projeto:** execute os comandos diretamente, sem repetir `cd projeto-websocket-adocao-pets`.
 
-// 3. Quando recebe mensagem
-ws.onmessage = (event) => {
-    const msg = JSON.parse(event.data);
-    exibir_mensagem(msg.content);  // Mostra na interface
-};
+## Entrega
 
-// 4. Quando envia (botão "Enviar")
-function enviar_mensagem() {
-    const texto = input.value;
-    const msg = JSON.stringify({
-        type: "message",
-        content: texto,
-        timestamp: new Date().toISOString()
-    });
-    ws.send(msg);  // Envia ao servidor
-}
+Além do código-fonte, o professor solicita um único PDF com prints do servidor em execução, de dois clientes conectados e do recebimento de uma mensagem em tempo real. Inclua também as quatro respostas técnicas, com até cinco linhas por questão e no máximo uma página para as respostas descritivas. As orientações para as capturas estão no [guia de screenshots](docs/GUIA_SCREENSHOTS.md).
 
-// 5. Quando desconecta
-ws.onclose = () => {
-    console.log("Disconnected from server");
-};
-```
-
----
-
-## 🧪 Testes Esperados
-
-### Teste 1: Conexão Inicial
-- Abrir navegador em `http://localhost:8000`
-- **Esperado:** Console mostra "Client [ID] connected"
-
-### Teste 2: Dois Clientes Simultâneos
-- Abrir 2 abas do navegador
-- Ambas devem conectar
-- **Esperado:** Console mostra 2 logs de conexão
-
-### Teste 3: Envio de Mensagem
-- Aba 1: Digitar "Luna foi adotada!"
-- Aba 1: Clicar "Enviar"
-- **Esperado:** Mensagem aparece em Aba 1 E Aba 2 instantaneamente
-
-### Teste 4: Desconexão
-- Fechar uma aba
-- **Esperado:** Console mostra "Client [ID] disconnected"
-
----
-
-## ❓ Respostas Técnicas para Apresentação
-
-### a) Como as conexões dos clientes foram armazenadas?
-
-Dicionário Python com websocket como chave:
-```python
-clients = {
-    websocket_obj: {"id": "uuid-123", "connected_at": datetime}
-}
-```
-Cada cliente recebe ID único (UUID). Ao desconectar, removemos do dicionário.
-
-### b) Como o sistema identifica um cliente conectado?
-
-Cada cliente gera um **UUID único** na conexão e envia em cada mensagem. O servidor usa o objeto `websocket` como chave para armazenar. No frontend, o cliente é identificado pela ordem de conexão (Cliente 1, Cliente 2...).
-
-### c) O que aconteceria com polling?
-
-Com polling (requisições HTTP periódicas):
-- Cliente faria GET a cada 1-2 segundos: "Tem mensagem nova?"
-- Servidor processaria centenas de requisições vazias
-- Latência: múltiplos ms por requisição
-- Muito ineficiente para tempo real
-
-**WebSocket evita isso:** conexão contínua, mensagem dispara instantaneamente.
-
-### d) Em quais cenários WebSocket é melhor que REST?
-
-1. **Chat em tempo real** (este projeto)
-2. **Notificações instantâneas** (novo pedido, novo aluno conectado)
-3. **Colaboração em tempo real** (compartilhamento de documento)
-4. **Monitoramento de sistemas** (alertas, status vivo)
-5. **Jogos multiplayer** (movimento instantâneo)
-
-REST é melhor para: dados estáticos, CRUD simples, cache.
-
----
-
-## 📊 Demonstração ao Professor
-
-### Passo a Passo
-
-1. **Abra terminal:** Execute `python server.py`
-2. **Abra navegador (Aba 1):** `http://localhost:8000`
-3. **Abra navegador (Aba 2):** `http://localhost:8000` (mesma URL)
-4. **Terminal mostra:**
-   ```
-   Client a1b2c3d4-... connected
-   Client e5f6g7h8-... connected
-   ```
-5. **Aba 1:** Digite "Luna foi adotada!" → Clique Enviar
-6. **Ambas abas mostram:** "Luna foi adotada!" em tempo real
-7. **Terminal mostra:**
-   ```
-   Message from a1b2c3d4-...: {"type": "message", "content": "Luna foi adotada!", ...}
-   ```
-8. **Feche Aba 2** → Terminal mostra:
-   ```
-   Client e5f6g7h8-... disconnected
-   ```
-
----
-
-## 📦 Dependências
-
-```txt
-websockets>=10.0
-```
-
-Instalar:
-```bash
-pip install websockets
-```
-
----
-
-## 🎓 Conceitos Demonstrados
-
-✅ **Protocolo WebSocket:** Comunicação bidirecional em tempo real  
-✅ **Cliente-Servidor:** Arquitetura cliente-servidor  
-✅ **Broadcast:** Retransmissão para múltiplos clientes  
-✅ **Identificação:** Clientes com UUID  
-✅ **Ciclo de vida:** Conexão → Mensagens → Desconexão  
-✅ **JSON:** Formato de mensagem estruturado  
-✅ **Assincronismo:** Python asyncio no servidor  
-
----
-
-## 🚨 Requisitos Atendidos
-
-| Requisito | Status | Local |
-|-----------|--------|-------|
-| Servidor WebSocket | ✅ | `server.py` |
-| Interface web (HTML + JS) | ✅ | `index.html` + `client.js` |
-| 2+ clientes simultâneos | ✅ | 2 abas do navegador |
-| Envio cliente → servidor | ✅ | Campo input + botão |
-| Broadcast servidor → clientes | ✅ | `for client_ws in clients: await client_ws.send()` |
-| Exibição visual | ✅ | Lista de mensagens em HTML |
-| Logs em console | ✅ | `print()` no servidor |
-| Protocolo `ws://` explícito | ✅ | `new WebSocket("ws://localhost:8000")` |
-| Decisões técnicas documentadas | ✅ | `docs/DECISOES_TECNICAS.md` |
-
----
-
-## 📌 Autor
-
-**Bruno** - Desenvolvedor do projeto WebSocket  
-Tema: Adoção de Pets  
-Data: 15/11/2026
-
----
-
-**Projeto concluído e pronto para apresentação! 🎉**
+Tema: adoção de pets. Desenvolvedor: Bruno.

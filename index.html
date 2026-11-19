@@ -1,78 +1,83 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🐾 Mural em Tempo Real - Adoção de Pets</title>
-    <link rel="stylesheet" href="style.css">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Mural de Adoções — notícias que aproximam</title>
+  <link rel="stylesheet" href="style.css?v=4">
+  <script src="client.js?v=3" defer></script>
 </head>
 <body>
-    <div class="container">
-        <!-- Cabeçalho -->
-        <header>
-            <h1>🐾 Mural em Tempo Real</h1>
-            <p>Avisos de adoção instantâneos com WebSocket</p>
-            <div class="status">
-                <span id="connection-status" class="status-badge disconnected">
-                    ⚫ Desconectado
-                </span>
-                <span id="client-id" class="client-info">ID: Aguardando...</span>
-            </div>
-        </header>
-
-        <!-- Seção Principal -->
-        <main>
-            <!-- Input de Mensagem -->
-            <section class="input-section">
-                <div class="input-group">
-                    <input 
-                        type="text" 
-                        id="messageInput" 
-                        placeholder="Ex: Luna foi adotada! 🎉"
-                        disabled
-                    >
-                    <button id="sendButton" disabled>
-                        📤 Enviar
-                    </button>
-                </div>
-                <div class="tips">
-                    💡 <strong>Dica:</strong> Abra esta página em 2 abas para ver o broadcast em tempo real!
-                </div>
-            </section>
-
-            <!-- Lista de Mensagens -->
-            <section class="messages-section">
-                <h2>💬 Mensagens em Tempo Real</h2>
-                <div id="messagesList" class="messages-list">
-                    <div class="empty-state">
-                        Nenhuma mensagem ainda. Envie a primeira!
-                    </div>
-                </div>
-            </section>
-
-            <!-- Informações Técnicas -->
-            <section class="info-section">
-                <h3>🔌 Informações Técnicas</h3>
-                <div class="tech-info">
-                    <p><strong>Protocolo:</strong> <code>ws://localhost:8000</code></p>
-                    <p><strong>Tipo de Conexão:</strong> WebSocket (bidirecional, tempo real)</p>
-                    <p><strong>Formato de Mensagem:</strong> JSON</p>
-                </div>
-                <div class="server-commands">
-                    <p><strong>Para iniciar o servidor, execute:</strong></p>
-                    <pre><code>python server.py</code></pre>
-                </div>
-            </section>
-        </main>
-
-        <!-- Rodapé -->
-        <footer>
-            <p>Projeto WebSocket - Tema: Adoção de Pets 🐾</p>
-            <p>Desenvolvido para demonstrar comunicação em tempo real</p>
-        </footer>
+  <header class="topbar">
+    <div class="topbar-inner">
+      <a class="brand" href="#" aria-label="Mural de Adoções, início">
+        <span class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="currentColor"><ellipse cx="6" cy="8" rx="2.1" ry="2.7" transform="rotate(-25 6 8)"/><ellipse cx="10.1" cy="5.6" rx="2" ry="2.6" transform="rotate(-8 10.1 5.6)"/><ellipse cx="14.4" cy="5.6" rx="2" ry="2.6" transform="rotate(8 14.4 5.6)"/><ellipse cx="18.2" cy="8.2" rx="2.1" ry="2.7" transform="rotate(25 18.2 8.2)"/><path d="M12 10.4c-2.7 0-3.5 2-5.3 3.8-2.3 2.4-.6 5.3 2 5.3 1.3 0 2.1-.7 3.3-.7s2 .7 3.3.7c2.6 0 4.3-2.9 2-5.3-1.8-1.8-2.6-3.8-5.3-3.8Z"/></svg>
+        </span>
+        <span class="brand-name">Mural de Adoções</span>
+      </a>
+      <div id="connection-status" class="session-indicator disconnected" role="status" aria-live="polite">
+        <span class="online-dot" aria-hidden="true"></span>
+        <span id="status-text">Conectando...</span>
+      </div>
     </div>
+  </header>
 
-    <!-- Scripts -->
-    <script src="client.js"></script>
+  <main class="main-shell">
+    <section class="intro" aria-labelledby="page-title">
+      <div class="intro-copy">
+        <span class="eyebrow"><span aria-hidden="true">✳</span> UM MURAL PARA BOAS NOTÍCIAS</span>
+        <h1 id="page-title">Toda história merece <em>ser compartilhada.</em></h1>
+        <p>Um cantinho para compartilhar notícias de adoção e acompanhar, juntos, cada novo começo.</p>
+        <div class="intro-caption"><span></span> Mais encontros, mais histórias felizes.</div>
+      </div>
+      <div class="intro-art" aria-hidden="true">
+        <div class="art-sun"></div>
+        <div class="art-paw">♥</div>
+        <div class="art-card">
+          <span class="art-card-icon">✳</span>
+          <span><strong>Uma boa notícia</strong><small>Chegou agora no mural</small></span>
+          <span class="art-card-heart">♥</span>
+        </div>
+        <div class="art-sticker">feito com<br>carinho</div>
+      </div>
+    </section>
+
+    <section class="panel input-panel" aria-labelledby="input-title">
+      <div class="section-heading">
+        <div class="heading-copy">
+          <span class="section-icon" aria-hidden="true">✎</span>
+          <div><h2 id="input-title">Compartilhe um aviso</h2><p>Uma novidade pode fazer o dia de alguém.</p></div>
+        </div>
+        <div class="connection-badge">
+          <span class="badge-dot" aria-hidden="true"></span>
+          <strong id="online-count">—</strong> conectados
+        </div>
+      </div>
+      <form id="messageForm" class="message-form">
+        <label class="message-field" for="nameInput">Seu nome
+          <input id="nameInput" type="text" placeholder="Como quer ser chamado?" maxlength="40" autocomplete="name" required>
+        </label>
+        <label class="message-field" for="messageInput">Seu aviso
+          <input id="messageInput" type="text" placeholder="Ex.: Luna encontrou uma família!" maxlength="200" disabled required>
+        </label>
+        <button type="submit" id="sendButton" class="button" disabled>Publicar aviso <span aria-hidden="true">↗</span></button>
+      </form>
+    </section>
+
+    <section class="panel messages-panel" aria-labelledby="messages-title">
+      <div class="section-heading">
+        <div class="heading-copy">
+          <span class="section-icon sage" aria-hidden="true">✳</span>
+          <div><h2 id="messages-title">Mural de avisos</h2><p>As novidades aparecem aqui em tempo real.</p></div>
+        </div>
+        <span class="live-label"><span aria-hidden="true"></span> AO VIVO</span>
+      </div>
+      <div id="messagesList" class="messages-list" aria-live="polite">
+        <div class="empty-state"><span class="empty-icon" aria-hidden="true">✉</span><p>O mural está esperando por uma história.</p><small>Que tal compartilhar a primeira novidade?</small></div>
+      </div>
+    </section>
+    <footer class="main-footer">Pequenos avisos, grandes recomeços. <span aria-hidden="true">♥</span></footer>
+  </main>
 </body>
 </html>

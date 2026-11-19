@@ -242,7 +242,7 @@ Se algo der errado:
 
 Antes de apresentar, confirme:
 
-- [ ] Todos os 11 arquivos criados
+- [ ] Arquivos do projeto incluídos
 - [ ] `ws://localhost:8000` EXPLÍCITO em `client.js`
 - [ ] Servidor Python testado e rodando
 - [ ] 2 abas do navegador conectadas
@@ -264,17 +264,18 @@ Ao professor, entregar:
    ```
    projeto-websocket-adocao-pets/
    ├── server.py
-   ├── server_full.py
    ├── client.js
    ├── index.html
    ├── style.css
    ├── README.md
    ├── requirements.txt
-   ├── EXECUCAO_RAPIDA.md
    ├── .gitignore
    └── docs/
        ├── DECISOES_TECNICAS.md
-       └── ARQUITETURA.md
+       ├── ARQUITETURA.md
+       ├── EXECUCAO_RAPIDA.md
+       ├── GUIA_SCREENSHOTS.md
+       └── CHECKLIST_APRESENTACAO.md
    ```
 
 3. **PDF com evidências:**

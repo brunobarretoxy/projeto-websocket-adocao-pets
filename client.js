@@ -1,5 +1,5 @@
 /**
- * Cliente WebSocket - Mural em Tempo Real
+ * Cliente WebSocket - Mural de Adoções
  * 
  * IMPORTANTE: O protocolo WebSocket é EXPLÍCITO neste código:
  * const ws = new WebSocket("ws://localhost:8000");
@@ -14,11 +14,14 @@
 
 // ========== VARIÁVEIS GLOBAIS ==========
 let ws;
+const nameInput = document.getElementById('nameInput');
 const messageInput = document.getElementById('messageInput');
 const sendButton = document.getElementById('sendButton');
+const messageForm = document.getElementById('messageForm');
 const messagesList = document.getElementById('messagesList');
 const connectionStatus = document.getElementById('connection-status');
-const clientId = document.getElementById('client-id');
+const statusText = document.getElementById('status-text');
+const onlineCount = document.getElementById('online-count');
 
 
 // ========== INICIALIZAÇÃO ==========
@@ -27,11 +30,12 @@ document.addEventListener('DOMContentLoaded', () => {
     conectarWebSocket();
     
     // Event listeners
-    sendButton.addEventListener('click', enviarMensagem);
-    messageInput.addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') {
-            enviarMensagem();
-        }
+    messageForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        enviarMensagem();
+    });
+    [nameInput, messageInput].forEach((input) => {
+        input.addEventListener('input', () => input.setCustomValidity(''));
     });
 });
 
@@ -80,7 +84,6 @@ function handleConnectionOpen(event) {
     
     // Limpar mensagens anteriores
     limparMensagens();
-    exibirMensagemSistema('🎉 Conectado ao servidor! Você pode enviar mensagens agora.');
 }
 
 
@@ -109,8 +112,14 @@ function handleMessageReceived(event) {
             };
         }
         
-        // Adicionar mensagem à lista
-        adicionarMensagem(dados.content, dados.timestamp);
+        // Verificar tipo de mensagem
+        if (dados.type === 'connection_count') {
+            // Atualizar contador de clientes
+            atualizarContadorClientes(dados.count);
+        } else {
+            // Adicionar mensagem à lista
+            adicionarMensagem(dados.content, dados.timestamp, dados.author);
+        }
         
     } catch (error) {
         console.error('❌ Erro ao processar mensagem:', error);
@@ -124,7 +133,7 @@ function handleError(event) {
      */
     console.error('❌ Erro na conexão WebSocket:', event);
     exibirStatus(false, 'Erro na conexão');
-    exibirMensagemSistema('⚠️ Erro na conexão. Verifique se o servidor está rodando.');
+    exibirMensagemSistema('Erro na conexão. Verifique se o servidor está rodando.');
 }
 
 
@@ -140,7 +149,8 @@ function handleConnectionClose(event) {
     exibirStatus(false, 'Desconectado');
     messageInput.disabled = true;
     sendButton.disabled = true;
-    exibirMensagemSistema('🔴 Desconectado do servidor.');
+    atualizarContadorClientes('—');
+    exibirMensagemSistema('Desconectado do servidor.');
     
     // Tentar reconectar após 3 segundos
     console.log('⏳ Tentando reconectar em 3 segundos...');
@@ -159,23 +169,31 @@ function enviarMensagem() {
      * O servidor faz broadcast para todos os clientes
      */
     
+    const nome = nameInput.value.trim();
     const texto = messageInput.value.trim();
     
     // Validar
+    if (!nome) {
+        nameInput.setCustomValidity('Informe seu nome.');
+        nameInput.reportValidity();
+        return;
+    }
     if (!texto) {
-        console.warn('⚠️ Campo de mensagem vazio');
+        messageInput.setCustomValidity('Escreva um aviso.');
+        messageInput.reportValidity();
         return;
     }
     
     if (!ws || ws.readyState !== WebSocket.OPEN) {
         console.error('❌ WebSocket não está conectado');
-        exibirMensagemSistema('❌ Não conectado ao servidor');
+        exibirMensagemSistema('Não conectado ao servidor');
         return;
     }
     
     // Criar objeto de mensagem
     const mensagem = {
         type: 'message',
+        author: nome,
         content: texto,
         timestamp: new Date().toISOString()
     };
@@ -197,14 +215,14 @@ function enviarMensagem() {
         
     } catch (error) {
         console.error('❌ Erro ao enviar mensagem:', error);
-        exibirMensagemSistema('❌ Erro ao enviar mensagem');
+        exibirMensagemSistema('Erro ao enviar mensagem');
     }
 }
 
 
 // ========== ATUALIZAÇÃO DA INTERFACE ==========
 
-function adicionarMensagem(conteudo, timestamp) {
+function adicionarMensagem(conteudo, timestamp, autor) {
     /**
      * Adiciona uma mensagem à lista visual
      */
@@ -221,17 +239,23 @@ function adicionarMensagem(conteudo, timestamp) {
     
     // Formatar timestamp
     const data = new Date(timestamp);
-    const horaFormatada = data.toLocaleTimeString('pt-BR');
+    const horaFormatada = data.toLocaleTimeString('pt-BR', {
+        hour: '2-digit',
+        minute: '2-digit'
+    });
     
-    // HTML da mensagem
-    messageItem.innerHTML = `
-        <div class="message-content">
-            💬 ${conteudo}
-        </div>
-        <div class="message-time">
-            ${horaFormatada}
-        </div>
-    `;
+    const messageMeta = document.createElement('div');
+    messageMeta.className = 'message-meta';
+    const messageAuthor = document.createElement('span');
+    messageAuthor.className = 'message-author';
+    messageAuthor.textContent = typeof autor === 'string' && autor.trim() ? autor.trim() : 'Sem nome';
+    const messageTime = document.createElement('span');
+    messageTime.textContent = `· ${horaFormatada}`;
+    messageMeta.append(messageAuthor, messageTime);
+    const messageContent = document.createElement('div');
+    messageContent.className = 'message-content';
+    messageContent.textContent = conteudo;
+    messageItem.append(messageMeta, messageContent);
     
     // Adicionar à lista
     messagesList.appendChild(messageItem);
@@ -256,15 +280,14 @@ function exibirMensagemSistema(texto) {
     
     // Criar elemento
     const messageItem = document.createElement('div');
-    messageItem.className = 'message-item';
-    messageItem.style.borderLeftColor = '#f44336'; // Vermelho para sistema
+    messageItem.className = 'message-item system';
     
     messageItem.innerHTML = `
-        <div class="message-content" style="color: #f44336; font-weight: bold;">
+        <div class="message-content">
             ${texto}
         </div>
         <div class="message-time">
-            ${new Date().toLocaleTimeString('pt-BR')}
+            ${new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
         </div>
     `;
     
@@ -278,10 +301,26 @@ function exibirStatus(conectado, texto) {
      * Atualiza o indicador de status da conexão
      */
     
-    connectionStatus.textContent = (conectado ? '🟢 ' : '🔴 ') + texto;
-    connectionStatus.className = conectado ? 'status-badge connected' : 'status-badge disconnected';
+    statusText.textContent = texto;
+    
+    if (conectado) {
+        connectionStatus.classList.add('connected');
+        connectionStatus.classList.remove('disconnected');
+    } else {
+        connectionStatus.classList.remove('connected');
+        connectionStatus.classList.add('disconnected');
+    }
     
     console.log(`📊 Status: ${texto} (${conectado ? 'conectado' : 'desconectado'})`);
+}
+
+
+function atualizarContadorClientes(count) {
+    /**
+     * Atualiza o contador de clientes conectados
+     */
+    onlineCount.textContent = count;
+    console.log(`👥 Clientes conectados: ${count}`);
 }
 
 
@@ -289,11 +328,18 @@ function limparMensagens() {
     /**
      * Limpa a lista de mensagens
      */
-    messagesList.innerHTML = '<div class="empty-state">Nenhuma mensagem ainda. Envie a primeira!</div>';
+    messagesList.innerHTML = `
+        <div class="empty-state">
+            <span class="empty-icon" aria-hidden="true">✉</span>
+            <p>O mural está esperando por uma história.</p>
+            <small>Que tal compartilhar a primeira novidade?</small>
+        </div>
+    `;
 }
 
 
 // ========== LOGS E DEBUG ==========
-console.log('%c🐾 MURAL EM TEMPO REAL - WebSocket', 'font-size: 18px; color: #667eea; font-weight: bold;');
-console.log('%cProjeto de Adoção de Pets', 'font-size: 14px; color: #764ba2;');
-console.log('%cConsole aberto - Você verá todos os eventos aqui!', 'color: #666;');
+console.log('%c🐾 MURAL DE ADOÇÕES — WebSocket', 'font-size: 18px; color: #d96c4e; font-weight: bold;');
+console.log('%cComunicação em Tempo Real', 'font-size: 14px; color: #748087;');
+console.log('%c⭐ Protocolo: ws://localhost:8000 (EXPLÍCITO no código)', 'color: #d96c4e; font-weight: bold;');
+console.log('%cConsole aberto - Você verá todos os eventos aqui!', 'color: #748087;');

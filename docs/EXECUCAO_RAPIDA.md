@@ -1,11 +1,12 @@
 # 🚀 GUIA RÁPIDO DE EXECUÇÃO
 
-## Opção 1: Servidor WebSocket Puro (Recomendado para Demonstração)
+Execute os comandos abaixo na pasta raiz do projeto.
+
+## Servidor WebSocket e interface
 
 ### Terminal 1 - Inicia o Servidor WebSocket
 
 ```bash
-cd projeto-websocket-adocao-pets
 python server.py
 ```
 
@@ -25,7 +26,6 @@ python server.py
 ### Terminal 2 - Inicia um Servidor HTTP (para servir HTML)
 
 ```bash
-cd projeto-websocket-adocao-pets
 python -m http.server 8001
 ```
 
@@ -40,23 +40,6 @@ Abra em 2 abas:
 ```
 http://localhost:8001
 http://localhost:8001
-```
-
----
-
-## Opção 2: Servidor Combinado (WebSocket + HTTP)
-
-Use o servidor_full.py que trata ambos:
-
-```bash
-cd projeto-websocket-adocao-pets
-python server_full.py
-```
-
-Depois abra direto:
-```
-http://localhost:8000
-http://localhost:8000
 ```
 
 ---

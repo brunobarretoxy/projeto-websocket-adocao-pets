@@ -22,7 +22,7 @@ from datetime import datetime
 clients = {}
 
 
-async def handle_client(websocket, path):
+async def handle_client(websocket):
     """
     Gerencia a conexão de um cliente WebSocket.
     
@@ -45,6 +45,9 @@ async def handle_client(websocket, path):
     # ========== OBRIGATÓRIO: LOG DE CONEXÃO ==========
     print(f"\n[CONEXAO] Cliente {client_id} conectado")
     print(f"   Total de clientes: {len(clients)}")
+    
+    # Enviar contagem de clientes para todos
+    await notificar_contagem_clientes()
     
     try:
         # Fica escutando mensagens do cliente
@@ -75,6 +78,23 @@ async def handle_client(websocket, path):
         
         print(f"\n[DESCONEXAO] Cliente {client_id} desconectado")
         print(f"   Total de clientes: {len(clients)}")
+        
+        # Atualizar contagem para clientes restantes
+        await notificar_contagem_clientes()
+
+
+async def notificar_contagem_clientes():
+    """Envia a contagem de clientes conectados para todos."""
+    contagem = {
+        "type": "connection_count",
+        "count": len(clients)
+    }
+    
+    for client_ws in clients:
+        try:
+            await client_ws.send(json.dumps(contagem))
+        except Exception as e:
+            print(f"[ERRO] Falha ao enviar contagem: {e}")
 
 
 async def main():

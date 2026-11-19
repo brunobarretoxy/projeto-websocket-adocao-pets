@@ -158,10 +158,9 @@ Com esses 4 screenshots, você prova para o professor:
 
 ## 🎬 DEPOIS DOS SCREENSHOTS
 
-1. Insira as 4 imagens no PDF que já foi gerado (`EVIDENCIAS_WEBSOCKET.pdf`)
-2. Ou crie um novo PDF combinando as imagens com as respostas técnicas
-3. Salve como `EVIDENCIAS_WEBSOCKET.pdf`
-4. Entregue junto com o código!
+1. Crie um PDF combinando as imagens com as respostas técnicas.
+2. Limite as respostas a cinco linhas por questão e a uma página no total.
+3. Entregue o PDF junto com o código.
 
 ---
 
